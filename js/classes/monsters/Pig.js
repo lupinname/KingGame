@@ -3,8 +3,29 @@ class Pig extends Sprite {
         collisionBlocks = [], imageSrc, frameRate,
         animations, loop, isAttack, frameBuffer,
         position, isAlive = true, life = 1, isFlip = false,
+        xflip = 1,
     }) {
         super({ imageSrc, frameRate, frameBuffer, animations, loop, position, isFlip })
+        this.hitbox = {
+            position: {
+                x: this.position.x + 20,
+                y: this.position.y + 25
+            },
+            width: 40,
+            height: 45
+            // width: 48,
+            // height: 53
+        }
+        this.hitboxCheckPlayer = {
+            position: {
+                x: this.position.x,
+                y: this.position.y
+            },
+            width: 0,
+            height: 0
+        }
+
+        this.lastDirection = 'left';
 
         //position pig
         this.velocity = {
@@ -21,20 +42,27 @@ class Pig extends Sprite {
         //setting pig
         this.actionLockCounter = 0;
         this.isAttack = isAttack;
-        this.xflip = 1
+        this.xflip = xflip
         this.isFlip = isFlip;
+        this.invincible = false;
+        this.invincibleCounter = 0;
+        this.isTakeDamage = false
+        this.isMove = false
+
 
         //status monster
         this.life = life
         this.isAlive = isAlive;
-        this.isDead = false
+        this.isDead = false;
+
+
 
         //animations    
         this.animations = {
             pigAttack: {
                 frameRate: 5,
                 frameBuffer: 10,
-                loop: false,
+                loop: true,
                 imageSrc: './img/pig/pig_attack.png',
             },
             pigDefault: {
@@ -64,7 +92,7 @@ class Pig extends Sprite {
             pigHit: {
                 frameRate: 2,
                 frameBuffer: 40,
-                loop: true,
+                loop: false,
                 imageSrc: './img/pig/pig_hit.png',
                 onComplete: () => {
                     // console.log('completed')
@@ -90,46 +118,82 @@ class Pig extends Sprite {
         // c.fillRect(this.position.x, this.position.y, this.width, this.height);
 
         this.position.x += this.velocity.x;
-        // Update hitbox player
+
+        // Update hitbox 
         this.updateHitbox()
 
         // check horizontal collision
         this.checkForHorizontalCollisions()
-        // this.checkForPlayerCollisionX()
+        this.checkForPlayerCollisionX()
         //apply gravity
         this.applyGravity()
 
         // update hitbox
         this.updateHitbox()
         this.updateHitboxAttack()
+        this.updateHitBoxCheckPlayer()
+        this.updateHitBoxCheckAttacking()
+
+        //checkplayer
+        this.checkHitBoxSearchPlayer()
 
         // check for be attacked or attack
-        this.checkForAttacking()
+        
 
-        //check hit box
-        c.fillStyle = "rgb(255, 0, 0, 0.3)"
-        c.fillRect(
-            this.hitbox.position.x,
-            this.hitbox.position.y,
-            this.hitbox.width,
-            this.hitbox.height
-        )
-
-        if (this.isAttack) {
-            c.fillRect(
-                this.hitboxAttack.position.x,
-                this.hitboxAttack.position.y,
-                this.hitboxAttack.width,
-                this.hitboxAttack.height
-            )
-        }
-
-
-        this.controlMovePig(120)
+        // this.controlMovePig(120)
 
         // check for vertical collisions
         this.checkForVerticalCollision()
-         this.checkForPlayerCollisionY()
+        this.checkForPlayerCollisionY()
+
+        // set Counter attackDamagePig
+        if (this.invincible == true) {
+            this.invincibleCounter++;
+            if (this.invincibleCounter > 100) {
+                this.invincible = false;
+                this.invincibleCounter = 0;
+            }
+        }
+
+        // debug
+        //checkon hit box
+        // c.fillStyle = "rgb(255, 0, 0, 0.3)"
+        // c.fillRect(
+        //     this.hitbox.position.x,
+        //     this.hitbox.position.y,
+        //     this.hitbox.width,
+        //     this.hitbox.height
+        // )
+        //check hitboxCheckPlayer
+        // c.fillStyle = "rgb(0, 0, 255, 0.2)"
+        // c.fillRect(
+        //     this.hitboxCheckPlayer.position.x,
+        //     this.hitboxCheckPlayer.position.y,
+        //     this.hitboxCheckPlayer.width,
+        //     this.hitboxCheckPlayer.height
+        // )
+        // c.fillStyle = "rgb(0, 255, 0, 0.2)"
+        // c.fillRect(
+        //     this.hitboxAttack.position.x,
+        //     this.hitboxAttack.position.y,
+        //     this.hitboxAttack.width,
+        //     this.hitboxAttack.height
+        // )
+        // c.fillStyle = "rgb(0, 200, 0, 0.2)"
+        // c.fillRect(
+        //     this.hitboxCheckAttacking.position.x,
+        //     this.hitboxCheckAttacking.position.y,
+        //     this.hitboxCheckAttacking.width,
+        //     this.hitboxCheckAttacking.height
+        // )
+        // //check position
+        // c.fillStyle = "blue"
+        // c.fillRect(
+        //     this.position.x,
+        //     this.position.y,
+        //     10,
+        //     10
+        // )
     }
     draw() {
         if (!this.loaded) return
@@ -145,13 +209,8 @@ class Pig extends Sprite {
         // set position image attack left
         let xDraw = this.position.x
         let yDraw = this.position.y
-        if (this.lastDirection === 'left' && this.isAttack) {
-            if (this.currentFrame == this.frameRate - 1) {
-                xDraw = this.position.x + 28
-            } else xDraw = this.position.x - 35
-        }
 
-        //test scale image
+        //test scale image 
         let testWidth = 70
         let testHeight = 70
 
@@ -186,6 +245,7 @@ class Pig extends Sprite {
             testHeight
         )
 
+
         c.restore()
 
         // c.drawImage(
@@ -204,29 +264,6 @@ class Pig extends Sprite {
         this.updateFrames();
     }
 
-    handleInput(keys) {
-        if (this.preventInput) return
-        this.velocity.x = 0;
-        if (keys.f.pressed) {
-            if (this.lastDirection === 'right' || this.lastDirection == null) {
-                this.switchSprite('attackRight')
-            } else if (this.lastDirection === 'left') {
-                this.switchSprite('attackLeft')
-            }
-        } else if (keys.a.pressed) {
-            this.switchSprite('runLeft')
-            this.velocity.x = -3
-            this.lastDirection = 'left'
-        } else if (keys.d.pressed) {
-            this.switchSprite('runRight')
-            this.velocity.x = 3
-            this.lastDirection = 'right'
-        } else {
-            if (this.lastDirection === 'left') this.switchSprite('idleLeft')
-            else this.switchSprite('idleRight')
-        }
-
-    }
     updateHitbox() {
         if (this.isAlive) {
             this.hitbox = {
@@ -248,34 +285,46 @@ class Pig extends Sprite {
             }
         }
     }
-    updateHitboxAttack() {
-        this.hitboxAttack = {
+    updateHitBoxCheckPlayer() {
+        this.hitboxCheckPlayer = {
             position: {
-                x: this.position.x + 100,
-                y: this.position.y + 49,
+                x: this.position.x - 85,
+                y: this.position.y + 15
             },
-            width: 0,
-            height: 0,
+            width: 250,
+            height: 60
         }
+    }
+    updateHitBoxCheckAttacking() {
+        this.hitboxCheckAttacking = {
+            position: {
+                x: this.position.x,
+                y: this.position.y + 5
+            },
+            width: 80,
+            height: 65
+        }
+    }
+    updateHitboxAttack() {
         if (this.isAttack) {
-            if (this.lastDirection === 'right' || this.lastDirection == null) {
+            if (this.lastDirection === 'left' || this.lastDirection == null) {
                 this.hitboxAttack = {
                     position: {
-                        x: this.position.x + 100,
-                        y: this.position.y + 49,
+                        x: this.position.x,
+                        y: this.position.y + 5,
                     },
-                    width: 46,
-                    height: 40,
+                    width: 40,
+                    height: 65,
                 }
             } else {
-                if (this.lastDirection === 'left') {
+                if (this.lastDirection === 'right') {
                     this.hitboxAttack = {
                         position: {
-                            x: this.position.x + 10,
-                            y: this.position.y + 49,
+                            x: this.position.x + 35,
+                            y: this.position.y + 5,
                         },
-                        width: 46,
-                        height: 40,
+                        width: 40,
+                        height: 65,
                     }
                 }
             }
@@ -359,46 +408,33 @@ class Pig extends Sprite {
         if (this.collision_Count === undefined) {
             this.collision_Count = 0
         }
+        // && this.collision_Count < 1
 
-        if (this.isAttack && this.collision_Count < 1) {
-            for (let i = 0; i < doors.length; i++) {
-                const door = doors[i]
-
-                if (this.hitboxAttack.position.x <= door.position.x + door.width &&
-                    this.hitboxAttack.position.x + this.hitboxAttack.width >= door.position.x &&
-                    this.hitboxAttack.position.y + this.hitboxAttack.height >= door.position.y &&
-                    this.hitboxAttack.position.y <= door.position.y + door.height
+        if (this.isAttack ) {     
+                if (this.hitboxAttack.position.x <= player.hitbox.position.x + player.hitbox.width &&
+                    this.hitboxAttack.position.x + this.hitboxAttack.width >= player.hitbox.position.x &&
+                    this.hitboxAttack.position.y + this.hitboxAttack.height >= player.position.y &&
+                    this.hitboxAttack.position.y <= player.hitbox.position.y + player.hitbox.height
                 ) {
-                    console.log('attacking')
+                    // console.log('attackPlayer')
+                    if (player.invincible === false) {
+                        player.invincible = true
+                        player.life--;
+                        console.log(player.life)
+                        // console.log(pigs[i].life)
+                        if (player.life <= 0) {
+                            player.isAlive = false
+                        }                     
+                        // player.isTakeDamage = true
+                    }
                     this.collision_Count++;
-                    break
+                    return
                 }
-            }
         } else if (!this.isAttack) {
             this.collision_Count = 0;
         }
     }
-    checkForPlayerCollisionX() {
-        // if a collision exists
-        const defaultPlayer = player 
-        if (this.hitbox.position.x <= defaultPlayer.hitbox.position.x + defaultPlayer.hitbox.width &&
-            this.hitbox.position.x + this.hitbox.width >= defaultPlayer.hitbox.position.x &&
-            this.hitbox.position.y + this.hitbox.height >= defaultPlayer.hitbox.position.y &&
-            this.hitbox.position.y <= defaultPlayer.hitbox.position.y + defaultPlayer.hitbox.height
-        ) {
-            if (this.velocity.x < 0) {
-                const offset = this.hitbox.position.x - this.position.x
-                this.position.x = defaultPlayer.hitbox.position.x + defaultPlayer.hitbox.width - offset + 0.01 //this.width
-                return
-            }
-            if (this.velocity.x > 0) {
-                const offset = this.hitbox.position.x - this.position.x + this.hitbox.width
-                this.position.x = defaultPlayer.hitbox.position.x - offset - 0.01
-                return
-            }
-        }
 
-    }
     checkForPlayerCollisionY() {
         // if a collision exists
         if (this.hitbox.position.x <= player.hitbox.position.x + player.hitbox.width &&
@@ -422,7 +458,131 @@ class Pig extends Sprite {
         }
 
     }
+    checkForPlayerCollisionX() {
+        // if a collision exists
+        if (this.hitbox.position.x <= player.hitbox.position.x + player.hitbox.width &&
+            this.hitbox.position.x + this.hitbox.width >= player.hitbox.position.x &&
+            this.hitbox.position.y + this.hitbox.height >= player.hitbox.position.y &&
+            this.hitbox.position.y <= player.hitbox.position.y + player.hitbox.height
+        ) {
+            let directionPlayer = this.checkDirectionPlayer();
+
+            if (directionPlayer == 'bottom') {
+            } else {
+                if (this.velocity.x < 0) {
+                    // this.velocity.x = 0
+                    const offset = this.hitbox.position.x - this.position.x
+                    this.position.x = player.hitbox.position.x + player.hitbox.width - offset + 0.01 //this.width
+                    return
+                }
+                if (this.velocity.x > 0) {
+                    // this.velocity.x = 0
+                    const offset = this.hitbox.position.x - this.position.x + this.hitbox.width
+                    this.position.x = player.hitbox.position.x - offset - 0.01
+                    return
+                }
+            }
+        }
+    }
+    checkHitBoxSearchPlayer() {
+        if (this.hitboxCheckPlayer.position.x <= player.hitbox.position.x + player.hitbox.width &&
+            this.hitboxCheckPlayer.position.x + this.hitboxCheckPlayer.width >= player.hitbox.position.x &&
+            this.hitboxCheckPlayer.position.y + this.hitboxCheckPlayer.height >= player.hitbox.position.y &&
+            this.hitboxCheckPlayer.position.y <= player.hitbox.position.y + player.hitbox.height
+        ) {
+            this.isMove = true
+            this.moveAttack()
+            if (this.hitboxCheckAttacking.position.x <= player.hitbox.position.x + player.hitbox.width &&
+                this.hitboxCheckAttacking.position.x + this.hitboxCheckAttacking.width >= player.hitbox.position.x &&
+                this.hitboxCheckAttacking.position.y + this.hitboxCheckAttacking.height >= player.hitbox.position.y &&
+                this.hitboxCheckAttacking.position.y <= player.hitbox.position.y + player.hitbox.height
+            ) {
+                this.attackPlayer()
+            }
+
+        } else {
+            if (this.isMove) {
+                this.velocity.x = 0
+                this.isMove = false
+                this.switchSprite('pigDefault')
+            }
+            this.isAttack = false
+
+        }
+    }
+    moveAttack() {
+        this.actionLockCounter++
+        if (this.actionLockCounter++ > 120) {
+            if (this.isTakeDamage) {
+                this.isTakeDamage = false
+                return
+            } else {
+                if (this.hitboxCheckPlayer.position.x + this.hitboxCheckPlayer.width / 2 >= player.hitbox.position.x) {
+                    this.lastDirection = 'left'
+                } else this.lastDirection = 'right'
+                if (this.lastDirection === 'right') {
+                    this.switchSprite('pigRun')
+                    this.velocity.x = 1
+                    this.xflip = -1
+                } else if (this.lastDirection === 'left') {
+                    this.switchSprite('pigRun')
+                    this.velocity.x = -1
+                    this.xflip = 1
+                }
+            }
+            this.actionLockCounter = 0
+        }
+    }
+    attackPlayer() {
+        this.actionLockCounter++
+        if (this.actionLockCounter++ > 120) {
+            if (this.isTakeDamage) {
+                this.isTakeDamage = false
+                return
+            } else {
+                if (this.hitboxCheckPlayer.position.x + this.hitboxCheckPlayer.width / 2 >= player.hitbox.position.x) {
+                    this.lastDirection = 'left'
+                } else this.lastDirection = 'right'
+
+                this.isAttack = true
+                if (this.lastDirection === 'right') {
+                    this.switchSprite('pigAttack')
+                    this.xflip = -1
+                } else if (this.lastDirection === 'left' || this.lastDirection == null) {
+                    this.switchSprite('pigAttack')
+                    this.xflip = 1
+                }
+                this.checkForAttacking()
+            }
+            this.actionLockCounter = 0
+        }
+    }
+
+    checkDirectionPlayer() {
+        const isColling = this.hitbox.position.x <= player.hitbox.position.x + player.hitbox.width &&
+            this.hitbox.position.x + this.hitbox.width >= player.hitbox.position.x &&
+            this.hitbox.position.y + this.hitbox.height >= player.hitbox.position.y &&
+            this.hitbox.position.y <= player.hitbox.position.y + player.hitbox.height
+
+        if (!isColling) return null
+        const xOverLap = Math.min(
+            player.hitbox.position.x + player.hitbox.width - this.hitbox.position.x,
+            this.hitbox.position.x + this.hitbox.width - player.hitbox.position.x,
+        )
+
+        const yOverLap = Math.min(
+            player.hitbox.position.y + player.hitbox.height - this.hitbox.position.y,
+            this.hitbox.position.y + this.hitbox.height - player.hitbox.position.y,
+        )
+
+        if (xOverLap < yOverLap - 12) {
+            return player.hitbox.position.x < this.hitbox.position.x ? 'right' : 'left'
+        } else
+            return player.hitbox.position.y < this.hitbox.position.y ? 'bottom' : 'top'
+    }
+
     controlMovePig(setTime) {
+
         // Returns a random integer from 1 to 100:
         this.actionLockCounter++;
 
@@ -436,13 +596,16 @@ class Pig extends Sprite {
             // if(i > 25 && i <= 50) {
             // 	this.velocity.x = -2
             // }
+
             if (this.lastDirection === 'right' || this.lastDirection == null) {
                 this.velocity.x = +1
                 this.lastDirection = 'left'
                 this.switchSprite('pigRun')
+                console.log('work')
                 this.xflip = -1
             } else if (this.lastDirection === 'left') {
                 this.velocity.x = -1
+                this.switchSprite('pigRun')
                 this.lastDirection = 'right'
                 this.xflip = 1
             }
