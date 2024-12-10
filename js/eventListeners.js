@@ -4,8 +4,6 @@ window.addEventListener('keydown', (event) => {
         case 'f':
             keys.f.pressed = true;
             player.isAttack = true;
-            // player.updateHitboxAttack();
-            // player.checkForAttacking();
             break
         case 'w':
             // check door colision to entry
@@ -34,6 +32,10 @@ window.addEventListener('keydown', (event) => {
         case 'd':
             keys.d.pressed = true;
             break
+        case 'k':
+            keys.k.pressed = true;
+            console.log('click')
+            break
     }
 })
 window.addEventListener('keyup', (event) => {
@@ -47,6 +49,10 @@ window.addEventListener('keyup', (event) => {
         case 'f':
             player.isAttack = false;
             keys.f.pressed = false;
+            
+            break
+        case 'k':
+            keys.k.pressed = false;
             break
     }
 })

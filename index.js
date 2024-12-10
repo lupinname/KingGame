@@ -19,49 +19,34 @@ let setPlayerInfo ={
          player = new Player({
             position: {
                 x: 200,
-                y: 200,
+                y: 400,
             },
             imageSrc: './img/king/idle.png',
             frameRate: 11,
             animations: {
-                attackRight: {
+                idleAttack: {
                     frameRate: 3,
                     frameBuffer: 10,
                     loop: false,
-                    imageSrc: './img/king/attack.png',
-                    // onComplete: () => {
-                    //     player.preventInput = false
-                    // },
+                    imageSrc: './img/king/idleAttack.png',
                 },
-                attackLeft: {
-                    frameRate: 3,
-                    frameBuffer: 10,
-                    loop: false,
-                    imageSrc: './img/king/attackLeft.png',
-                },
-                idleRight: {
+                idle: {
                     frameRate: 11,
                     frameBuffer: 8,
                     loop: true,
                     imageSrc: './img/king/idle.png',
                 },
-                idleLeft: {
-                    frameRate: 11,
-                    frameBuffer: 8,
-                    loop: true,
-                    imageSrc: './img/king/idleLeft.png',
-                },
-                runRight: {
+                idleRun: {
                     frameRate: 8,
                     frameBuffer: 8,
                     loop: true,
-                    imageSrc: './img/king/runRight.png',
+                    imageSrc: './img/king/idleRun.png',
                 },
-                runLeft: {
-                    frameRate: 8,
-                    frameBuffer: 8,
+                idleDead: {
+                    frameRate: 4,
+                    frameBuffer: 15,
                     loop: true,
-                    imageSrc: './img/king/runLeft.png',
+                    imageSrc: './img/king/idleDead.png',
                 },
                 enterDoor: {
                     frameRate: 8,
@@ -78,7 +63,7 @@ let setPlayerInfo ={
                                 if (level === 4) level = 1
                                 isSetPigs = false;
                                 levels[level].init()
-                                player.switchSprite('idleRight')
+                                player.switchSprite('idle')
                                 player.preventInput = false
                                 gsap.to(overlay, {
                                     opacity: 0,
@@ -91,82 +76,6 @@ let setPlayerInfo ={
         });
     }
 }   
-// Player setting
-//  const player = new Player({
-//     position: {
-//         x: 200,
-//         y: 200,
-//     },
-//     imageSrc: './img/king/idle.png',
-//     frameRate: 11,
-//     animations: {
-//         attackRight: {
-//             frameRate: 3,
-//             frameBuffer: 10,
-//             loop: false,
-//             imageSrc: './img/king/attack.png',
-//             // onComplete: () => {
-//             //     player.preventInput = false
-//             // },
-//         },
-//         attackLeft: {
-//             frameRate: 3,
-//             frameBuffer: 10,
-//             loop: false,
-//             imageSrc: './img/king/attackLeft.png',
-//         },
-//         idleRight: {
-//             frameRate: 11,
-//             frameBuffer: 8,
-//             loop: true,
-//             imageSrc: './img/king/idle.png',
-//         },
-//         idleLeft: {
-//             frameRate: 11,
-//             frameBuffer: 8,
-//             loop: true,
-//             imageSrc: './img/king/idleLeft.png',
-//         },
-//         runRight: {
-//             frameRate: 8,
-//             frameBuffer: 8,
-//             loop: true,
-//             imageSrc: './img/king/runRight.png',
-//         },
-//         runLeft: {
-//             frameRate: 8,
-//             frameBuffer: 8,
-//             loop: true,
-//             imageSrc: './img/king/runLeft.png',
-//         },
-//         enterDoor: {
-//             frameRate: 8,
-//             frameBuffer: 8,
-//             loop: false,
-//             imageSrc: './img/king/enterDoor.png',
-//             onComplete: () => {
-//                 // console.log('completed')
-//                 gsap.to(overlay, {
-//                     opacity: 1,
-//                     onComplete: () => {
-//                         level++
-
-//                         if (level === 4) level = 1
-//                         isSetPigs = false;
-//                         levels[level].init()
-//                         player.switchSprite('idleRight')
-//                         player.preventInput = false
-//                         gsap.to(overlay, {
-//                             opacity: 0,
-//                         })
-//                     },
-//                 })
-//             },
-//         },
-//     },
-// });
-
-
 
 //level map 
 let level = 1
@@ -174,10 +83,6 @@ let levels = {
     1: {
         init: () => {
             isSetPigs = true
-            // parsedCollisions = collisionLevel1.parse2D();
-            // collisionBlocks = parsedCollisions.creatObjectsFrom2D()
-            // player.collisionBlocks = collisionBlocks
-            // pig.collisionBlocks = collisionBlocks
             if (player.currentAnimation) player.currentAnimation.isActive = false
 
             background = new Sprite({
@@ -185,7 +90,7 @@ let levels = {
                     x: 0,
                     y: 0
                 },
-                imageSrc: './img/backgroundLevel1.png'
+                imageSrc: './img/map/backgroundLevel1.png'
             })
 
             doors = [
@@ -233,9 +138,6 @@ let levels = {
     2: {
         init: () => {
             isSetPigs = true
-            parsedCollisions = collisionLevel2.parse2D();
-            collisionBlocks = parsedCollisions.creatObjectsFrom2D()
-            player.collisionBlocks = collisionBlocks
             if (player.currentAnimation) player.currentAnimation.isActive = false
 
             player.position.x = 96
@@ -246,7 +148,7 @@ let levels = {
                     x: 0,
                     y: 0
                 },
-                imageSrc: './img/backgroundLevel2.png'
+                imageSrc: './img/map/backgroundLevel2.png'
             })
 
             doors = [
@@ -295,7 +197,7 @@ let levels = {
                     x: 0,
                     y: 0
                 },
-                imageSrc: './img/backgroundLevel3.png'
+                imageSrc: './img/map/backgroundLevel3.png'
             })
 
             doors = [
@@ -313,6 +215,24 @@ let levels = {
             ]
         }
     },
+    4: {
+        init: () => {
+            isSetPigs = true
+            if (player.currentAnimation) player.currentAnimation.isActive = false
+
+            player.position.x = 96
+            player.position.y = 140
+
+            background = new Sprite({
+                position: {
+                    x: 0,
+                    y: 0
+                },
+                imageSrc: './img/map/backgroundLevel2.png'
+            })
+            checkCollision(collisionLevel4);
+        }
+    },
 }
 
 
@@ -328,6 +248,9 @@ const keys = {
         pressed: false,
     },
     f: {
+        pressed: false,
+    },
+    k: {
         pressed: false,
     },
 }
