@@ -3,6 +3,7 @@ class Pig extends Sprite {
         collisionBlocks = [], imageSrc, frameRate,
         animations, loop, isAttack, frameBuffer,
         position, isAlive = true, life = 1, isFlip = false,
+        xflip = 1,
     }) {
         super({ imageSrc, frameRate, frameBuffer, animations, loop, position, isFlip })
         this.hitbox = {
@@ -41,7 +42,7 @@ class Pig extends Sprite {
         //setting pig
         this.actionLockCounter = 0;
         this.isAttack = isAttack;
-        this.xflip = 1
+        this.xflip = xflip
         this.isFlip = isFlip;
         this.invincible = false;
         this.invincibleCounter = 0;
@@ -155,7 +156,7 @@ class Pig extends Sprite {
         }
 
         // debug
-        //check hit box
+        //checkon hit box
         // c.fillStyle = "rgb(255, 0, 0, 0.3)"
         // c.fillRect(
         //     this.hitbox.position.x,
@@ -263,29 +264,6 @@ class Pig extends Sprite {
         this.updateFrames();
     }
 
-    // handleInput(keys) {
-    //     if (this.preventInput) return
-    //     this.velocity.x = 0;
-    //     if (keys.f.pressed) {
-    //         if (this.lastDirection === 'right' || this.lastDirection == null) {
-    //             this.switchSprite('attackRight')
-    //         } else if (this.lastDirection === 'left') {
-    //             this.switchSprite('attackLeft')
-    //         }
-    //     } else if (keys.a.pressed) {
-    //         this.switchSprite('runLeft')
-    //         this.velocity.x = -3
-    //         this.lastDirection = 'left'
-    //     } else if (keys.d.pressed) {
-    //         this.switchSprite('runRight')
-    //         this.velocity.x = 3
-    //         this.lastDirection = 'right'
-    //     } else {
-    //         if (this.lastDirection === 'left') this.switchSprite('idleLeft')
-    //         else this.switchSprite('idleRight')
-    //     }
-
-    // }
     updateHitbox() {
         if (this.isAlive) {
             this.hitbox = {
@@ -438,7 +416,7 @@ class Pig extends Sprite {
                     this.hitboxAttack.position.y + this.hitboxAttack.height >= player.position.y &&
                     this.hitboxAttack.position.y <= player.hitbox.position.y + player.hitbox.height
                 ) {
-                    console.log('attackPlayer')
+                    // console.log('attackPlayer')
                     if (player.invincible === false) {
                         player.invincible = true
                         player.life--;

@@ -1,8 +1,8 @@
 Array.prototype.parse2D = function () {
     const rows = []
     // thay doi i+= 16 tùy thuộc vào độ dài map
-    for (let i = 0; i < this.length; i += 16) {
-        rows.push(this.slice(i, i + 16))
+    for (let i = 0; i < this.length; i += canvasXBlock) {
+        rows.push(this.slice(i, i + canvasXBlock))
     }
     return rows
 }

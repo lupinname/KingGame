@@ -5,7 +5,7 @@ class Player extends Sprite {
         isFlip = true,
     }) {
         super({ imageSrc, frameRate, animations, loop, position })
-        this.hitbox = this.hitbox = {
+        this.hitbox = {
             position: {
                 x: this.position.x + 58,
                 y: this.position.y + 34
@@ -300,6 +300,9 @@ class Player extends Sprite {
         }
     }
     checkForMonsterCollisionX() {
+        if(pigs == null){
+            return
+        }
         for (let i = 0; i < pigs.length; i++) {
             const pig = pigs[i];
             // if a collision exists
@@ -309,7 +312,6 @@ class Player extends Sprite {
                 this.hitbox.position.y <= pig.hitbox.position.y + pig.hitbox.height
             ) {
                 let DirectionPig = this.checkDirectionPig(pigs[i]);
-                console.log(DirectionPig)
                 if (DirectionPig = 'left' || (DirectionPig = 'right')) {
                     if (this.velocity.x < 0) {
                         const offset = this.hitbox.position.x - this.position.x
@@ -326,6 +328,9 @@ class Player extends Sprite {
         }
     }
     checkForMonsterCollisionY() {
+        if(pigs == null){
+            return
+        }
         for (let i = 0; i < pigs.length; i++) {
             const pig = pigs[i];
             // if a collision exists
@@ -335,7 +340,6 @@ class Player extends Sprite {
                 this.hitbox.position.y <= pig.hitbox.position.y + pig.hitbox.height
             ) {
                 let DirectionPig = this.checkDirectionPig(pigs[i]);
-                console.log(DirectionPig)
                 if (DirectionPig = 'bottom' || (DirectionPig = 'top')) {
                     if (this.velocity.y < 0) {
                         this.velocity.y = 0
@@ -409,12 +413,12 @@ class Player extends Sprite {
         pigs[i].switchSprite('pigHit')
 
         if (this.lastDirection === 'right' || this.lastDirection == null) {
-            pigs[i].velocity.x += 4;
+            pigs[i].velocity.x += 6;
             setTimeout(function () {
                 pigs[i].velocity.x = 0;
             }, 50)
         } else {
-            pigs[i].velocity.x += -4;
+            pigs[i].velocity.x += -6;
             setTimeout(function () {
                 pigs[i].velocity.x = 0;
             }, 50)
