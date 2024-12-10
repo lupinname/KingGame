@@ -103,7 +103,7 @@ let setPlayerInfo = {
 }
 
 //level map 
-let level = 5
+let level = 1
 let levels = {
     1: {
         init: () => {
